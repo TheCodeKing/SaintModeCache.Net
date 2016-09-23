@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaintModeCaching", "SaintModeCache.Net\SaintModeCaching.csproj", "{5C19C81C-AE23-4435-92A5-CC04333EEC07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaintModeCaching.Tests", "SaintModeCache.Net.Tests\SaintModeCaching.Tests.csproj", "{A5A162C4-E726-4746-B771-10874DF11939}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5C19C81C-AE23-4435-92A5-CC04333EEC07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C19C81C-AE23-4435-92A5-CC04333EEC07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C19C81C-AE23-4435-92A5-CC04333EEC07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C19C81C-AE23-4435-92A5-CC04333EEC07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5A162C4-E726-4746-B771-10874DF11939}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5A162C4-E726-4746-B771-10874DF11939}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5A162C4-E726-4746-B771-10874DF11939}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5A162C4-E726-4746-B771-10874DF11939}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
