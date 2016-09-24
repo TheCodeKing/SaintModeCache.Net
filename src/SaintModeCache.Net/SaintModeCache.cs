@@ -13,6 +13,7 @@ namespace SaintModeCaching
         private const string LockNamePrefix = "__LockShadow#";
         private const string ShadowCacheName = "__SaintModeCacheShadow";
         private const string ShadowKeyPrefixCacheName = "__Shadow#";
+        private static readonly object DummyShadowObject = string.Intern(string.Empty);
         private readonly bool disposeStore;
         private readonly Action<string, Func<string, object>, CacheItemPolicy> onAsyncUpdateCache;
         private readonly ObjectCache shadowCache;
@@ -179,7 +180,7 @@ namespace SaintModeCaching
             lock (GetLock(item.Key))
             {
                 storeCache.Set(item.Key, item.Value, ObjectCache.InfiniteAbsoluteExpiration);
-                shadowCache.Set(shadowKey, string.Empty, policy);
+                shadowCache.Set(shadowKey, DummyShadowObject, policy);
             }
         }
 
@@ -224,7 +225,7 @@ namespace SaintModeCaching
 
         private static object GetLock(string key)
         {
-            return string.Intern(string.Concat(LockNamePrefix, key));
+            return string.Intern(string.Concat(LockNamePrefix, key).ToLowerInvariant());
         }
 
         private static string GetShadowKey(string key)
