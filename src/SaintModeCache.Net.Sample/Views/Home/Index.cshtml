@@ -3,12 +3,15 @@
 <p>Only one thread will ever retrieve the data. If no data is in the cache then all requests will block, until one thread fetches data.</p>
 <p>Data is refreshed in background for every cache expire. Absolute expiration times are used, and new data fetched when cache becomes stale.</p>
 <p>Refresh the page to see caching behaviour.</p>
-@foreach(var item in Model.Items)
+@foreach (var item in Model.Items)
 {
-<ul>
-    <li><b>Key:</b> @item.CacheKey</li>
-    <li><b>Value:</b> @item.Value</li>
-    <li><b>Is Stale:</b> @item.Stale</li>
-</ul>
+    <ul>
+        <li>
+            <b>Key:</b> @item.CacheKey</li>
+        <li>
+            <b>Value:</b> @item.Value</li>
+        <li>
+            <b>Is Stale:</b> @item.Stale</li>
+    </ul>
 }
 <input type="button" value="Refresh Page" onClick="window.location.reload()">

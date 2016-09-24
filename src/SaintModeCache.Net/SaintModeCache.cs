@@ -134,6 +134,12 @@ namespace SaintModeCaching
             return storeCache.Get(key);
         }
 
+        public DateTime? LastUpdatedDateTimeUtc(string key)
+        {
+            var shadowKey = GetShadowKey(key);
+            return shadowCache.Get(shadowKey) as DateTime?;
+        }
+
         public object Remove(string key)
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
@@ -233,12 +239,6 @@ namespace SaintModeCaching
                 return true;
             }
             return false;
-        }
-
-        public DateTime? LastUpdatedDateTimeUtc(string key)
-        {
-            var shadowKey = GetShadowKey(key);
-            return shadowCache.Get(shadowKey) as DateTime?;
         }
 
         public void Set(CacheItem item, DateTimeOffset absoluteExpiration)

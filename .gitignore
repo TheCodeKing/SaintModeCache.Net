@@ -3,7 +3,6 @@
 
 
 # Sitecore temp files
-
 temp/
 IconCache/
 logs/
