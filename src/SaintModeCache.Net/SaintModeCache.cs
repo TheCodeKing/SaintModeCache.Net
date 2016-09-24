@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Caching;
 using System.Threading;
 using Conditions;
@@ -9,10 +10,12 @@ namespace SaintModeCaching
 {
     public sealed class SaintModeCache : ISaintModeCache
     {
-        private const string ShadowKeyPrefixacheName = "__Shadow#";
         private const string CacheName = "__SaintModeCache";
+        private const string LockNamePrefrix = "__LockShadow#";
         private const string ShadowCacheName = "__SaintModeCacheShadow";
+        private const string ShadowKeyPrefixacheName = "__Shadow#";
         private readonly bool disposeStore;
+        private readonly Action<string, Func<string, object>, CacheItemPolicy> onAsyncUpdateCache;
         private readonly ObjectCache shadowCache;
         private readonly ObjectCache storeCache;
         private uint? defaultTimeoutSeconds;
@@ -43,58 +46,7 @@ namespace SaintModeCaching
 
             storeCache = customCache;
             shadowCache = new MemoryCache(ShadowCacheName, null);
-        }
-
-        public TCacheItem AddOrGetExisting<TCacheItem>(string key, Func<string, TCacheItem> updateCache)
-            where TCacheItem : class
-        {
-            key.Requires("key").IsNotNullOrWhiteSpace();
-            updateCache.Requires("updateCache").IsNotNull();
-
-            return AddOrGetExisting(key, updateCache, GetDefaultOffset());
-        }
-
-        public TCacheItem AddOrGetExisting<TCacheItem>(string key, Func<string, TCacheItem> updateCache,
-            DateTimeOffset absoluteExpiration)
-            where TCacheItem : class
-        {
-            key.Requires("key").IsNotNullOrWhiteSpace();
-            updateCache.Requires("updateCache").IsNotNull();
-
-            return AddOrGetExisting(key, updateCache, new CacheItemPolicy {AbsoluteExpiration = absoluteExpiration});
-        }
-
-        public TCacheItem AddOrGetExisting<TCacheItem>(string key, Func<string, TCacheItem> updateCache,
-            CacheItemPolicy cachePolicy) where TCacheItem : class
-        {
-            key.Requires("key").IsNotNullOrWhiteSpace();
-            updateCache.Requires("updateCache").IsNotNull();
-            cachePolicy.Requires("cachePolicy").IsNotNull();
-
-            var item = Get(key);
-            if (Expired(key) && item != null)
-            {
-                Action<string, Func<string, object>, CacheItemPolicy> onAsyncUpdateCache = OnAsyncUpdateCache;
-                onAsyncUpdateCache.BeginInvoke(key, updateCache, cachePolicy, null, null);
-            }
-
-            if (item != null)
-            {
-                return item as TCacheItem;
-            }
-
-            lock (key)
-            {
-                item = Get(key);
-                if (item != null)
-                {
-                    return item as TCacheItem;
-                }
-
-                item = OnUpdateCache(key, updateCache, cachePolicy);
-            }
-
-            return item as TCacheItem;
+            onAsyncUpdateCache = OnAsyncUpdateCache;
         }
 
         public bool Contains(string key)
@@ -124,15 +76,58 @@ namespace SaintModeCaching
             return shadowCacheItem == null;
         }
 
-        public object Get<TCacheItem>(string key)
+        public TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, TCacheItem> updateCache)
+            where TCacheItem : class
+        {
+            key.Requires("key").IsNotNullOrWhiteSpace();
+            updateCache.Requires("updateCache").IsNotNull();
+
+            return GetOrCreate(key, updateCache, GetDefaultOffset());
+        }
+
+        public TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, TCacheItem> updateCache,
+            DateTimeOffset absoluteExpiration)
+            where TCacheItem : class
+        {
+            key.Requires("key").IsNotNullOrWhiteSpace();
+            updateCache.Requires("updateCache").IsNotNull();
+
+            return GetOrCreate(key, updateCache, new CacheItemPolicy {AbsoluteExpiration = absoluteExpiration});
+        }
+
+        public TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, TCacheItem> updateCache,
+            CacheItemPolicy cachePolicy) where TCacheItem : class
+        {
+            key.Requires("key").IsNotNullOrWhiteSpace();
+            updateCache.Requires("updateCache").IsNotNull();
+            cachePolicy.Requires("cachePolicy").IsNotNull();
+
+            object item;
+            bool stale;
+            if (TryGet(key, out item, out stale))
+            {
+                if (stale)
+                {
+                    Debug.WriteLine("Item is stale");
+                    onAsyncUpdateCache.BeginInvoke(key, updateCache, cachePolicy, null, null);
+                }
+
+                return item as TCacheItem;
+            }
+
+            item = OnUpdateCache(key, updateCache, cachePolicy);
+            return item as TCacheItem;
+        }
+
+        public TCacheItem GetWithoutCreateOrNull<TCacheItem>(string key)
             where TCacheItem : class
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
 
-            return Get(key) as TCacheItem;
+            return GetWithoutCreateOrNull(key) as TCacheItem;
         }
 
-        public object Get(string key)
+        public object GetWithoutCreateOrNull(string key)
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
 
@@ -146,7 +141,7 @@ namespace SaintModeCaching
             var shadowKey = GetShadowKey(key);
             object item;
 
-            lock (key)
+            lock (GetLock(key))
             {
                 item = storeCache.Remove(key);
                 shadowCache.Remove(shadowKey);
@@ -155,44 +150,45 @@ namespace SaintModeCaching
             return item;
         }
 
-        public void Set(string key, object value)
+        public void SetOrUpdateWithoutCreate(string key, object value)
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
 
-            Set(key, value, GetDefaultOffset());
+            SetOrUpdateWithoutCreate(key, value, GetDefaultOffset());
         }
 
-        public void Set(string key, object value, DateTimeOffset absoluteExpiration)
+        public void SetOrUpdateWithoutCreate(string key, object value, DateTimeOffset absoluteExpiration)
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
 
-            Set(key, value, new CacheItemPolicy {AbsoluteExpiration = absoluteExpiration});
+            SetOrUpdateWithoutCreate(key, value, new CacheItemPolicy {AbsoluteExpiration = absoluteExpiration});
         }
 
-        public void Set(string key, object value, CacheItemPolicy policy)
+        public void SetOrUpdateWithoutCreate(string key, object value, CacheItemPolicy policy)
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
             policy.Requires("policy").IsNotNull();
 
-            Set(new CacheItem(key, value), policy);
+            SetOrUpdateWithoutCreate(new CacheItem(key, value), policy);
         }
 
-        public void Set(CacheItem item)
+        public void SetOrUpdateWithoutCreate(CacheItem item)
         {
             item.Requires("item").IsNotNull();
 
             Set(item, GetDefaultOffset());
         }
 
-        public void Set(CacheItem item, CacheItemPolicy policy)
+        public void SetOrUpdateWithoutCreate(CacheItem item, CacheItemPolicy policy)
         {
             item.Requires("item").IsNotNull();
             policy.Requires("policy").IsNotNull();
+            var shadowKey = GetShadowKey(item.Key);
 
-            lock (item.Key)
+            lock (GetLock(item.Key))
             {
                 storeCache.Set(item.Key, item.Value, ObjectCache.InfiniteAbsoluteExpiration);
-                shadowCache.Set(GetShadowKey(item.Key), DateTime.UtcNow, policy);
+                shadowCache.Set(shadowKey, DateTime.UtcNow, policy);
             }
         }
 
@@ -200,8 +196,7 @@ namespace SaintModeCaching
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
 
-            var item = storeCache.Get(key);
-            return Expired(key) && item != null;
+            return Expired(key) && Contains(key);
         }
 
         public DefaultCacheCapabilities DefaultCacheCapabilities => storeCache.DefaultCacheCapabilities;
@@ -217,16 +212,21 @@ namespace SaintModeCaching
             return enumerable.GetEnumerator();
         }
 
+        private static object GetLock(string key)
+        {
+            return string.Intern(string.Concat(LockNamePrefrix, key));
+        }
+
         private static string GetShadowKey(string key)
         {
             return string.Concat(ShadowKeyPrefixacheName, key);
         }
 
-        private static bool IsLocked(string shadowKey)
+        private static bool IsLocked(object lockObj)
         {
-            if (Monitor.TryEnter(shadowKey))
+            if (Monitor.TryEnter(lockObj))
             {
-                Monitor.Exit(shadowKey);
+                Monitor.Exit(lockObj);
             }
             else
             {
@@ -235,11 +235,17 @@ namespace SaintModeCaching
             return false;
         }
 
+        public DateTime? LastUpdatedDateTimeUtc(string key)
+        {
+            var shadowKey = GetShadowKey(key);
+            return shadowCache.Get(shadowKey) as DateTime?;
+        }
+
         public void Set(CacheItem item, DateTimeOffset absoluteExpiration)
         {
             item.Requires("item").IsNotNull();
 
-            Set(item, new CacheItemPolicy {AbsoluteExpiration = absoluteExpiration});
+            SetOrUpdateWithoutCreate(item, new CacheItemPolicy {AbsoluteExpiration = absoluteExpiration});
         }
 
         private void Dispose(bool disposing)
@@ -274,21 +280,15 @@ namespace SaintModeCaching
         private void OnAsyncUpdateCache(string key, Func<string, object> func, CacheItemPolicy cachePolicy)
         {
             var shadowKey = GetShadowKey(key);
-            var item = shadowCache.Get(shadowKey);
-            if (item != null)
+            var shadowLock = GetLock(shadowKey);
+            if (!Expired(key) || IsLocked(shadowLock))
             {
                 return;
             }
 
-            if (IsLocked(shadowKey))
+            lock (shadowLock)
             {
-                return;
-            }
-
-            lock (shadowKey)
-            {
-                item = shadowCache.Get(shadowKey);
-                if (item != null)
+                if (!Expired(key))
                 {
                     return;
                 }
@@ -299,9 +299,23 @@ namespace SaintModeCaching
 
         private object OnUpdateCache(string key, Func<string, object> func, CacheItemPolicy cachePolicy)
         {
+            Debug.WriteLine("EXEC update " + Thread.CurrentThread.ManagedThreadId);
             var item = func(key);
-            Set(key, item, cachePolicy);
+            SetOrUpdateWithoutCreate(key, item, cachePolicy);
             return item;
+        }
+
+        private bool TryGet(string key, out object item, out bool stale)
+        {
+            key.Requires("key").IsNotNullOrWhiteSpace();
+
+            lock (GetLock(key))
+            {
+                var contains = Contains(key);
+                stale = contains && Expired(key);
+                item = storeCache.Get(key);
+                return contains;
+            }
         }
 
         ~SaintModeCache()
