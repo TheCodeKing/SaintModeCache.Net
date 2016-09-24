@@ -44,7 +44,7 @@ Create with custom ObjectCache for storing values and a default expires policy i
 var cache = new SaintModeCache(new MemoryCache("MyCache", null), 60); 
 ``` 
 ### GetOrCreate 
-Get cache value is exists or block for single thread to create cache item. Uses the default expires policy from constructor if set, or infinite. 
+Get cache value if exists or block for single thread to create cache item. Uses the default expires policy from constructor if set, or default policy defined by constructor.
 ``` CSharpe 
 cache.GetOrCreate("MyKey", k => 
         string.Concat("Value for key: ", k)); 
@@ -65,12 +65,12 @@ cache.GetOrCreate("MyKey", k =>
         expiresPolicy); 
 ``` 
 ### Stale 
-A cache item is stale when it has expired, but has not yet progressed a new value to replace it. Once stale, a background fetch is only triggered by a call to GetOrCreate. 
+A cache item is stale when it has expired, but has not yet fetched an updated value to replace it. Once stale, a background fetch is only triggered by a call to GetOrCreate. 
 ``` CSharpe 
 var isStale = Stale("MyKey", new object()); 
 ``` 
 ### Expired 
-A cache item has expired when the cache policy defined when it was added has passed. However the item may still be in cache in a stale state. 
+A cache item has expired when it's cache policy has passed. However the item may still be in cache in a stale state. 
 ``` CSharpe 
 var hasExpired = Expired("MyKey"); 
 ``` 
@@ -88,7 +88,7 @@ if (cache.TryGet("MyKey", out result, out stale)) {
 } 
 ``` 
 ### SetOrUpdateWithoutCreate 
-Set or update an item in the cache directly. This will update an existing item and change it's expires policy to the default which is infinite. 
+Set or update an item in the cache directly. This will update an existing item and change it's expires policy to the default defined by the constructor. 
 ``` CSharpe 
 SetOrUpdateWithoutCreate("MyKey", new object()); 
 ``` 
@@ -96,31 +96,31 @@ Set or update an item in the cache directly and define a new expires policy. Thi
 ``` CSharpe 
 SetOrUpdateWithoutCreate("MyKey", new object(), 60); 
 ``` 
-Set or update an item in the cache directly and define a new expires policy. This will update an existing item and change the policy to the one provided. 
+Set or update an item in the cache directly and define a new expires policy. This will update an existing item and change the cache policy to the one provided. 
 ``` CSharpe 
 var expiresPolicy = new CacheItemPolicy {  
     AbsoluteExpiration = DateTime.UtcNow.AddSeconds(20)}; 
 SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy); 
 ``` 
-Set or update an item in the cache directly using a CacheItem instance. The default expires policy of infinite will be used. 
+Set or update an item in the cache directly using a CacheItem instance. The default expires policy defined by the constructor is used. 
 ``` CSharpe 
 var expiresPolicy = new CacheItemPolicy {  
     AbsoluteExpiration = DateTime.UtcNow.AddSeconds(20)}; 
 SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy); 
 ``` 
-Set or update an item in the cache directly using a CacheItem instance. The default expires policy of infinite will be used. 
+Set or update an item in the cache directly using a CacheItem instance. This will update an existing item and change it's expires policy to a timeout in seconds.
 ``` CSharpe 
 var expiresPolicy = new CacheItemPolicy {  
     AbsoluteExpiration = DateTime.UtcNow.AddSeconds(20)}; 
 SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy); 
 ``` 
 ### GetWithoutCreateOrNull 
-Get an existing item from the cache if it exists or return null. SaintMode is not available via this interface, but it can be used to access existing values where they exist. 
+Get an existing item from the cache if it exists or return null. SaintMode is not available via this interface, but it can be used to access existing values where they exist.
 ``` CSharpe 
 var cacheValue = GetWithoutCreateOrNull("MyKey"); 
 ``` 
 ### Remove 
-Explicitly remove an item from the cache as follows and return the last value. 
+Explicitly remove an item from the cache and return the last value. 
 ``` CSharpe 
 var removedValue = Remove("MyKey"); 
 ``` 
