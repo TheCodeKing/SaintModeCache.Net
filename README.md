@@ -2,7 +2,7 @@
 ## Overview 
 SaintModeCache is a thread safe in-memory cache wrapper for performance optimisation. It's able to continue serving stale content after expiry, whilst it repopulates the cache with a non-blocking guaranteed single thread. 
  
-It's ideal for websites which have slow integration points or expensive data processes which can affect the user experience. The SaintMode cache allows developers to optimise caching around any integration points, and ensures the users aren't affected by slow under performing dependencies such as databases, or web services. 
+It's ideal for websites which have slow integration points or expensive data processes which can affect the user experience. The SaintMode cache allows developers to optimise caching around any integration points, and ensures that users aren't affected by slow under performing dependencies such as databases, or web services. 
  
 Note the cache does not fetch new data until a cache key has been requested and after it has expired. At this point it will trigger a refresh of the cache item on a background thread, and continue serving stale content until the process completes. 
  
