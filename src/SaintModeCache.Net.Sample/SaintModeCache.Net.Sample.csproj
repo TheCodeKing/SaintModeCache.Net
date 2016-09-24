@@ -226,9 +226,6 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\SaintModeCache.Net\SaintModeCache.Net.csproj">
       <Project>{5c19c81c-ae23-4435-92a5-cc04333eec07}</Project>
       <Name>SaintModeCache.Net</Name>
