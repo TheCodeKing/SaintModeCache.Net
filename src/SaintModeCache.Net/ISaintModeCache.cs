@@ -1,11 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Caching;
 
 namespace SaintModeCaching
 {
-    public interface ISaintModeCache : IEnumerable<KeyValuePair<string, object>>, IDisposable, IEnumerable
+    public interface ISaintModeCache : IEnumerable<KeyValuePair<string, object>>, IDisposable
     {
         DefaultCacheCapabilities DefaultCacheCapabilities { get; }
 
