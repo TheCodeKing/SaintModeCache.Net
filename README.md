@@ -19,9 +19,25 @@ Use the GetOrCreate Method to leverage SaintMode caching mode. This requires a d
 var cache = new SaintModeCache(); 
 var cacheKey = "customer123"; 
 var cacheTimeInSeconds = 60; 
-var cachedValue = cache.GetOrCreate(cacheKey, k => { 
+var cachedValue = cache.GetOrCreate(cacheKey,  => { 
         // access remote resources and get cacheable data 
         return new DataModel(); 
+    }, 
+    cacheTimeInSeconds); 
+``` 
+### UpdateCacheCancellationToken
+The update delegate us passed a UpdateCacheCancellationToken. This can be used to cancel the update of the cache, and force the system to contuniue using any existing cache items. 
+Warning when using UpdateCacheCancellationToken, if any existing cache item is removed or evicted from cache for any reason then the cache will return a null value.
+``` 
+var cache = new SaintModeCache(); 
+var cacheKey = "customer123"; 
+var cacheTimeInSeconds = 60; 
+// initalise a fallback cache item in case of cancel
+cache.SetOrUpdateWithoutCreate(cacheKey, DataModel.Default, cacheTimeInSeconds);
+var cachedValue = cache.GetOrCreate(cacheKey, (key,cancelToken) => { 
+        // on failure to get data from remote resources
+        cancelToken.IsCancellationRequested = true;
+        return null; 
     }, 
     cacheTimeInSeconds); 
 ``` 
@@ -32,7 +48,7 @@ Create with defaults which has an infinite expires policy when not overridden.
 var cache = new SaintModeCache(); 
 ``` 
 Create with given expires policy in seconds. Used when not overridden. 
-``` CSharpe 
+``` CSharpe
 var cache = new SaintModeCache(60); 
 ``` 
 Create with custom ObjectCache for storing values. 
@@ -46,22 +62,22 @@ var cache = new SaintModeCache(new MemoryCache("MyCache", null), 60);
 ### GetOrCreate 
 Get cache value if exists or block for single thread to create cache item. Uses the default expires policy from constructor if set, or default policy defined by constructor.
 ``` CSharpe 
-cache.GetOrCreate("MyKey", k => 
-        string.Concat("Value for key: ", k)); 
+cache.GetOrCreate("MyKey", (key, cancelToken) => 
+        string.Concat("Value for key: ", key)); 
 ``` 
 As above but overrides default expires policy with a custom timeout in seconds.        
 ``` CSharpe 
 var expiresPolicy = DateTime.UtcNow.AddSeconds(20); 
-cache.GetOrCreate("MyKey", k => 
-        string.Concat("Value for key: ", k), 
+cache.GetOrCreate("MyKey", (key, cancelToken) => 
+        string.Concat("Value for key: ", key), 
         expiresPolicy); 
 ```         
 As above but uses CacheItemPolicy instance.  
 ``` CSharpe 
 var expiresPolicy = new CacheItemPolicy {  
-    AbsoluteExpiration = DateTime.UtcNow.AddSeconds(20)}; 
-cache.GetOrCreate("MyKey", k => 
-        string.Concat("Value for key: ", k), 
+    AbsoluteExpiration = DateTime.UtcNow.AddSeconds(20) }; 
+cache.GetOrCreate("MyKey", (key, cancelToken) => 
+        string.Concat("Value for key: ", key), 
         expiresPolicy); 
 ``` 
 ### Stale 
@@ -94,7 +110,8 @@ SetOrUpdateWithoutCreate("MyKey", new object());
 ``` 
 Set or update an item in the cache directly and define a new expires policy. This will update an existing item and change it's expires policy to a timeout in seconds. 
 ``` CSharpe 
-SetOrUpdateWithoutCreate("MyKey", new object(), 60); 
+var expiresPolicy = DateTime.UtcNow.AddSeconds(60); 
+SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy); 
 ``` 
 Set or update an item in the cache directly and define a new expires policy. This will update an existing item and change the cache policy to the one provided. 
 ``` CSharpe 
