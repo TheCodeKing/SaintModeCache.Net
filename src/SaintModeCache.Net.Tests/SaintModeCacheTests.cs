@@ -111,7 +111,6 @@ namespace SaintModeCaching.Tests
             }
         }
 
-
         [Test]
         public void WhenCustomCacheUsedThenAddToCustomCache()
         {

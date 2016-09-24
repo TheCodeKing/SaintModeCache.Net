@@ -48,19 +48,6 @@ namespace SaintModeCaching
             onAsyncUpdateCache = OnAsyncUpdateCache;
         }
 
-        private bool Contains(string key)
-        {
-            key.Requires("key").IsNotNullOrWhiteSpace();
-
-            return storeCache.Contains(key);
-        }
-
-        public bool TryGet(string key, out object item)
-        {
-            bool isStale;
-            return TryGet(key, out item, out isStale);
-        }
-
         public CacheEntryChangeMonitor CreateCacheEntryChangeMonitor(IEnumerable<string> keys)
         {
             return storeCache.CreateCacheEntryChangeMonitor(keys);
@@ -203,6 +190,25 @@ namespace SaintModeCaching
             return Expired(key) && Contains(key);
         }
 
+        public bool TryGet(string key, out object item)
+        {
+            bool isStale;
+            return TryGet(key, out item, out isStale);
+        }
+
+        public bool TryGet(string key, out object item, out bool stale)
+        {
+            key.Requires("key").IsNotNullOrWhiteSpace();
+
+            lock (GetLock(key))
+            {
+                var contains = Contains(key);
+                stale = contains && Expired(key);
+                item = storeCache.Get(key);
+                return contains;
+            }
+        }
+
         public DefaultCacheCapabilities DefaultCacheCapabilities => storeCache.DefaultCacheCapabilities;
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -244,6 +250,13 @@ namespace SaintModeCaching
             item.Requires("item").IsNotNull();
 
             SetOrUpdateWithoutCreate(item, new CacheItemPolicy {AbsoluteExpiration = absoluteExpiration});
+        }
+
+        private bool Contains(string key)
+        {
+            key.Requires("key").IsNotNullOrWhiteSpace();
+
+            return storeCache.Contains(key);
         }
 
         private void Dispose(bool disposing)
@@ -300,19 +313,6 @@ namespace SaintModeCaching
             var item = func(key);
             SetOrUpdateWithoutCreate(key, item, cachePolicy);
             return item;
-        }
-
-        public bool TryGet(string key, out object item, out bool stale)
-        {
-            key.Requires("key").IsNotNullOrWhiteSpace();
-
-            lock (GetLock(key))
-            {
-                var contains = Contains(key);
-                stale = contains && Expired(key);
-                item = storeCache.Get(key);
-                return contains;
-            }
         }
 
         ~SaintModeCache()

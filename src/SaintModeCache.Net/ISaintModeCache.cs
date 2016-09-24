@@ -12,10 +12,6 @@ namespace SaintModeCaching
 
         bool Expired(string key);
 
-        bool TryGet(string key, out object item);
-
-        bool TryGet(string key, out object item, out bool stale);
-
         TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, TCacheItem> updateCache)
             where TCacheItem : class;
 
@@ -43,5 +39,9 @@ namespace SaintModeCaching
         void SetOrUpdateWithoutCreate(CacheItem item);
 
         bool Stale(string key);
+
+        bool TryGet(string key, out object item);
+
+        bool TryGet(string key, out object item, out bool stale);
     }
 }

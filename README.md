@@ -104,15 +104,15 @@ SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy);
 ``` 
 Set or update an item in the cache directly using a CacheItem instance. The default expires policy defined by the constructor is used. 
 ``` CSharpe 
-var expiresPolicy = new CacheItemPolicy {  
-    AbsoluteExpiration = DateTime.UtcNow.AddSeconds(20)}; 
-SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy); 
+var cacheItem = new CacheItem("MyKey", new object());
+SetOrUpdateWithoutCreate(cacheItem); 
 ``` 
 Set or update an item in the cache directly using a CacheItem instance. This will update an existing item and change it's expires policy to a timeout in seconds.
 ``` CSharpe 
+var cacheItem = new CacheItem("MyKey", new object());
 var expiresPolicy = new CacheItemPolicy {  
     AbsoluteExpiration = DateTime.UtcNow.AddSeconds(20)}; 
-SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy); 
+SetOrUpdateWithoutCreate(cacheItem, expiresPolicy); 
 ``` 
 ### GetWithoutCreateOrNull 
 Get an existing item from the cache if it exists or return null. SaintMode is not available via this interface, but it can be used to access existing values where they exist.
