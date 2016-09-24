@@ -74,15 +74,16 @@ A cache item has expired when the cache policy defined when it was added has pas
 ``` CSharpe
 var hasExpired = Expired("MyKey");
 ```
-### Contains
-Contains returns true if an item exists in the cache, regardless of whether or not the data is stale. This method is not ThreadSafe.
-``` CSharpe
-var containsValue = Contains("MyKey");
-```
 ### TryGet
 Try to get an existing item from the cache if it exists. Saint mode is not available via this interface, therefore it will return false if no item exists.
 ``` CSharpe
 if (cache.TryGet("MyKey", out result)) {
+    // do something with result
+}
+```
+As above, but includes a value to include whether the data is stale.
+``` CSharpe
+if (cache.TryGet("MyKey", out result, out stale)) {
     // do something with result
 }
 ```

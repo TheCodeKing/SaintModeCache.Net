@@ -48,11 +48,17 @@ namespace SaintModeCaching
             onAsyncUpdateCache = OnAsyncUpdateCache;
         }
 
-        public bool Contains(string key)
+        private bool Contains(string key)
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
 
             return storeCache.Contains(key);
+        }
+
+        public bool TryGet(string key, out object item)
+        {
+            bool isStale;
+            return TryGet(key, out item, out isStale);
         }
 
         public CacheEntryChangeMonitor CreateCacheEntryChangeMonitor(IEnumerable<string> keys)
@@ -132,12 +138,6 @@ namespace SaintModeCaching
             return storeCache.Get(key);
         }
 
-        public DateTime? LastUpdatedDateTimeUtc(string key)
-        {
-            var shadowKey = GetShadowKey(key);
-            return shadowCache.Get(shadowKey) as DateTime?;
-        }
-
         public object Remove(string key)
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
@@ -192,7 +192,7 @@ namespace SaintModeCaching
             lock (GetLock(item.Key))
             {
                 storeCache.Set(item.Key, item.Value, ObjectCache.InfiniteAbsoluteExpiration);
-                shadowCache.Set(shadowKey, DateTime.UtcNow, policy);
+                shadowCache.Set(shadowKey, string.Empty, policy);
             }
         }
 
@@ -302,7 +302,7 @@ namespace SaintModeCaching
             return item;
         }
 
-        private bool TryGet(string key, out object item, out bool stale)
+        public bool TryGet(string key, out object item, out bool stale)
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
 

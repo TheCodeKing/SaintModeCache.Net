@@ -111,30 +111,6 @@ namespace SaintModeCaching.Tests
             }
         }
 
-        [Test]
-        public void WhenCacheObjectThenLastUpdatedIsNotNull()
-        {
-            // arrange
-            var expectedResult = "expectedResult";
-            var cacheKey = "key";
-            using (var cache = new SaintModeCache())
-            {
-                var policy = new CacheItemPolicy {AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration};
-                var ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
-                cache.GetOrCreate(cacheKey, key =>
-                {
-                    ewh.Set();
-                    return expectedResult;
-                }, policy);
-                ewh.WaitOne();
-
-                // act
-                var updated = cache.LastUpdatedDateTimeUtc(cacheKey);
-
-                // assert
-                Assert.That(updated, Is.Not.Null);
-            }
-        }
 
         [Test]
         public void WhenCustomCacheUsedThenAddToCustomCache()
@@ -262,21 +238,6 @@ namespace SaintModeCaching.Tests
         }
 
         [Test]
-        public void WhenNoCacheObjectThenContainsReturnsFalse()
-        {
-            // arrange
-            var cacheKey = "key";
-            using (var cache = new SaintModeCache())
-            {
-                // act
-                var result = cache.Contains(cacheKey);
-
-                // assert
-                Assert.That(result, Is.False);
-            }
-        }
-
-        [Test]
         public void WhenNoCacheObjectThenGetReturnsNull()
         {
             // arrange
@@ -285,21 +246,6 @@ namespace SaintModeCaching.Tests
             {
                 // act
                 var result = cache.GetWithoutCreateOrNull(cacheKey);
-
-                // assert
-                Assert.That(result, Is.Null);
-            }
-        }
-
-        [Test]
-        public void WhenNoCacheObjectThenLastUpdatedIsNull()
-        {
-            // arrange
-            var cacheKey = "key";
-            using (var cache = new SaintModeCache())
-            {
-                // act
-                var result = cache.LastUpdatedDateTimeUtc(cacheKey);
 
                 // assert
                 Assert.That(result, Is.Null);
@@ -340,24 +286,6 @@ namespace SaintModeCaching.Tests
 
                 // assert
                 Assert.That(result, Is.False);
-            }
-        }
-
-        [Test]
-        public void WhenNotStaleCacheObjectThenContainsReturnsTrue()
-        {
-            // arrange
-            var expectedResult = "expectedResult";
-            var cacheKey = "key";
-            using (var cache = new SaintModeCache())
-            {
-                cache.GetOrCreate(cacheKey, key => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
-
-                // act
-                var result = cache.Contains(cacheKey);
-
-                // assert
-                Assert.That(result, Is.True);
             }
         }
 
@@ -527,26 +455,6 @@ namespace SaintModeCaching.Tests
 
                 // assert
                 Assert.That(result, Is.EqualTo(expectedResult));
-            }
-        }
-
-        [Test]
-        public void WhenStaleCacheObjectThenContainsReturnsTrue()
-        {
-            // arrange
-            var expectedResult = "expectedResult";
-            var cacheKey = "key";
-            using (var cache = new SaintModeCache())
-            {
-                var policy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddMilliseconds(10)};
-                cache.GetOrCreate(cacheKey, key => expectedResult, policy);
-                Thread.Sleep(20);
-
-                // act
-                var result = cache.Contains(cacheKey);
-
-                // assert
-                Assert.That(result, Is.True);
             }
         }
 
