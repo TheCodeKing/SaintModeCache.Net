@@ -121,7 +121,6 @@ var cacheValue = GetWithoutCreateOrNull("MyKey");
 ```
 ### Remove
 Explicitly remove an item from the cache as follows and return the last value.
-GetWithoutCreateOrNull
 ``` CSharpe
 var removedValue = Remove("MyKey");
 ```
