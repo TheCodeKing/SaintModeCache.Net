@@ -15,7 +15,10 @@ namespace SaintModeCaching
         private const string ShadowKeyPrefixCacheName = "__Shadow#";
         private static readonly object DummyShadowObject = string.Intern(string.Empty);
         private readonly bool disposeStore;
-        private readonly Action<string, Func<string, CacheUpdateCancellationToken, object>, CacheItemPolicy> onAsyncUpdateCache;
+
+        private readonly Action<string, Func<string, CacheUpdateCancellationToken, object>, CacheItemPolicy>
+            onAsyncUpdateCache;
+
         private readonly ObjectCache shadowCache;
         private readonly ObjectCache storeCache;
         private uint? defaultTimeoutSeconds;
@@ -68,7 +71,8 @@ namespace SaintModeCaching
             return !shadowCache.Contains(shadowKey);
         }
 
-        public TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, CacheUpdateCancellationToken, TCacheItem> updateCache)
+        public TCacheItem GetOrCreate<TCacheItem>(string key,
+            Func<string, CacheUpdateCancellationToken, TCacheItem> updateCache)
             where TCacheItem : class
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
@@ -77,7 +81,8 @@ namespace SaintModeCaching
             return GetOrCreate(key, updateCache, GetDefaultOffset());
         }
 
-        public TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, CacheUpdateCancellationToken, TCacheItem> updateCache,
+        public TCacheItem GetOrCreate<TCacheItem>(string key,
+            Func<string, CacheUpdateCancellationToken, TCacheItem> updateCache,
             DateTimeOffset absoluteExpiration)
             where TCacheItem : class
         {
@@ -87,7 +92,8 @@ namespace SaintModeCaching
             return GetOrCreate(key, updateCache, new CacheItemPolicy {AbsoluteExpiration = absoluteExpiration});
         }
 
-        public TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, CacheUpdateCancellationToken, TCacheItem> updateCache,
+        public TCacheItem GetOrCreate<TCacheItem>(string key,
+            Func<string, CacheUpdateCancellationToken, TCacheItem> updateCache,
             CacheItemPolicy cachePolicy) where TCacheItem : class
         {
             key.Requires("key").IsNotNullOrWhiteSpace();
@@ -288,7 +294,8 @@ namespace SaintModeCaching
                 : ObjectCache.InfiniteAbsoluteExpiration;
         }
 
-        private void OnAsyncUpdateCache(string key, Func<string, CacheUpdateCancellationToken, object> func, CacheItemPolicy cachePolicy)
+        private void OnAsyncUpdateCache(string key, Func<string, CacheUpdateCancellationToken, object> func,
+            CacheItemPolicy cachePolicy)
         {
             var shadowKey = GetShadowKey(key);
             var shadowLock = GetLock(shadowKey);
@@ -308,7 +315,8 @@ namespace SaintModeCaching
             }
         }
 
-        private object OnUpdateCache(string key, Func<string, CacheUpdateCancellationToken, object> func, CacheItemPolicy cachePolicy)
+        private object OnUpdateCache(string key, Func<string, CacheUpdateCancellationToken, object> func,
+            CacheItemPolicy cachePolicy)
         {
             var updateCancellationToken = new CacheUpdateCancellationToken();
             var item = func(key, updateCancellationToken);

@@ -12,13 +12,16 @@ namespace SaintModeCaching
 
         bool Expired(string key);
 
-        TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, SaintModeCache.CacheUpdateCancellationToken, TCacheItem> updateCache)
+        TCacheItem GetOrCreate<TCacheItem>(string key,
+            Func<string, SaintModeCache.CacheUpdateCancellationToken, TCacheItem> updateCache)
             where TCacheItem : class;
 
-        TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, SaintModeCache.CacheUpdateCancellationToken, TCacheItem> updateCache, DateTimeOffset offset)
+        TCacheItem GetOrCreate<TCacheItem>(string key,
+            Func<string, SaintModeCache.CacheUpdateCancellationToken, TCacheItem> updateCache, DateTimeOffset offset)
             where TCacheItem : class;
 
-        TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, SaintModeCache.CacheUpdateCancellationToken, TCacheItem> updateCache,
+        TCacheItem GetOrCreate<TCacheItem>(string key,
+            Func<string, SaintModeCache.CacheUpdateCancellationToken, TCacheItem> updateCache,
             CacheItemPolicy cachePolicy) where TCacheItem : class;
 
         TCacheItem GetWithoutCreateOrNull<TCacheItem>(string key)

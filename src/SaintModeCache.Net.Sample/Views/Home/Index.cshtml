@@ -9,18 +9,18 @@
         <li>
             <b>@item.CacheKey</b> @item.Value
         </li>
-    @if (item.Stale)
-    {
-        <li class="fetching">
-            <b>Status:</b> Expired. Fetching update...
-        </li>
-    }
-    else
-    {
-        <li class="cached">
-            <b>Status:</b> Cached
-        </li>
-    }
+        @if (item.Stale)
+        {
+            <li class="fetching">
+                <b>Status:</b> Expired. Fetching update...
+            </li>
+        }
+        else
+        {
+            <li class="cached">
+                <b>Status:</b> Cached
+            </li>
+        }
     </ul>
 }
 <input type="button" value="Refresh Page" onClick="window.location.reload()">
