@@ -1,11 +1,14 @@
 ﻿<h1>SaintModeCache Demo</h1>
-<p>This page demos an example of using SaintModeCache.Net to optimise performance. If requires data from a fake data service that takes 5 seconds to respond.</p>
-<p>Only one thread will ever retrieve the data. If no data is in the cache then all requests will block, whilst one thread fetches data.</p>
-<p>Data is refreshed in background for every cache expire. Absolute expiration of 10 seconds is used.</p>
+<p>This page demos an example of using SaintModeCache.Net to optimise performance. It requires data from fake data sources that are slow to respond.</p>
+<p>Only one thread will ever retrieve the data. If no data is in the cache then all requests will block, until one thread fetches data.</p>
+<p>Data is refreshed in background for every cache expire. Absolute expiration times are used, and new data fetched when cache becomes stale.</p>
 <p>Refresh the page to see caching behaviour.</p>
+@foreach(var item in Model.Items)
+{
 <ul>
-    <li><b>Key:</b> @Model.CacheKey</li>
-    <li><b>Value:</b> @Model.Value</li>
-    <li><b>Is Stale:</b> @Model.Stale</li>
+    <li><b>Key:</b> @item.CacheKey</li>
+    <li><b>Value:</b> @item.Value</li>
+    <li><b>Is Stale:</b> @item.Stale</li>
 </ul>
+}
 <input type="button" value="Refresh Page" onClick="window.location.reload()">

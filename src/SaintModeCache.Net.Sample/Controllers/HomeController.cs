@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Web.Mvc;
 using SaintModeCache.Net.Sample.Models;
@@ -11,22 +12,36 @@ namespace SaintModeCache.Net.Sample.Controllers
 
         public ActionResult Index()
         {
-            var cacheKey = "ServiceKey";
             var model = new HomeIndexViewModel();
-            var expireDateTime = DateTime.UtcNow.AddSeconds(10);
-            model.Value = Cache.GetOrCreate("ServiceKey", k =>
+            var details = new List<CacheDetailsModel>();
+
+            Cache.GetOrCreate("5SecondServiceKey", k =>
             {
                 Thread.Sleep(5000);
-                return string.Concat("5 seconds to load this text. Last Updated ", DateTime.UtcNow);
+                return string.Concat("This text takes 5 seconds to load, and expires in 10 seconds. Updated ", DateTime.UtcNow.ToLongTimeString());
             },
-            expireDateTime);
+            DateTime.UtcNow.AddSeconds(10));
 
-            model.Stale = Cache.Stale(cacheKey);
-            model.CacheKey = cacheKey;
-            var lastUpdated = Cache.LastUpdatedDateTimeUtc(cacheKey);
-            var nextUpdate = ((lastUpdated ?? expireDateTime) - DateTime.UtcNow).TotalSeconds;
-            model.NextUpdateSeconds = nextUpdate;
+            Cache.GetOrCreate("1SecondServiceKey", k =>
+            {
+                Thread.Sleep(1000);
+                return string.Concat("This text takes 1 seconds to load, and expires in 20 seconds. Updated ", DateTime.UtcNow.ToLongTimeString());
+            },
+            DateTime.UtcNow.AddSeconds(20));
 
+            foreach (KeyValuePair<string, object> item in Cache)
+            {
+                var modelDetails = new CacheDetailsModel
+                {
+                    Value = item.Value as string,
+                    Stale = Cache.Stale(item.Key),
+                    CacheKey = item.Key
+                };
+
+                details.Add(modelDetails);
+            }
+
+            model.Items = details;
             return View(model);
         }
     }
