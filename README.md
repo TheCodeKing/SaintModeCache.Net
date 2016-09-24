@@ -32,8 +32,11 @@ Warning if a cache item is removed or evicted from cache for any reason, and the
 var cache = new SaintModeCache(); 
 var cacheKey = "customer123"; 
 var cacheTimeInSeconds = 60; 
+
 // initalise a fallback cache item in case of cancel
 cache.SetOrUpdateWithoutCreate(cacheKey, DataModel.Default, cacheTimeInSeconds);
+
+// continues to return the cache item, even after expires
 var cachedValue = cache.GetOrCreate(cacheKey, (key,cancelToken) => { 
         // on failure to get data from remote resources
         cancelToken.IsCancellationRequested = true;
