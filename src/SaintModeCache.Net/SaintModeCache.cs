@@ -10,9 +10,9 @@ namespace SaintModeCaching
     public sealed class SaintModeCache : ISaintModeCache
     {
         private const string CacheName = "__SaintModeCache";
-        private const string LockNamePrefrix = "__LockShadow#";
+        private const string LockNamePrefix = "__LockShadow#";
         private const string ShadowCacheName = "__SaintModeCacheShadow";
-        private const string ShadowKeyPrefixacheName = "__Shadow#";
+        private const string ShadowKeyPrefixCacheName = "__Shadow#";
         private readonly bool disposeStore;
         private readonly Action<string, Func<string, object>, CacheItemPolicy> onAsyncUpdateCache;
         private readonly ObjectCache shadowCache;
@@ -218,12 +218,12 @@ namespace SaintModeCaching
 
         private static object GetLock(string key)
         {
-            return string.Intern(string.Concat(LockNamePrefrix, key));
+            return string.Intern(string.Concat(LockNamePrefix, key));
         }
 
         private static string GetShadowKey(string key)
         {
-            return string.Concat(ShadowKeyPrefixacheName, key);
+            return string.Concat(ShadowKeyPrefixCacheName, key);
         }
 
         private static bool IsLocked(object lockObj)
