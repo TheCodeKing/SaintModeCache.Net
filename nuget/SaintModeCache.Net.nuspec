@@ -16,10 +16,9 @@
 			<reference file="SaintModeCache.Net.dll" />
 		</references>
 		<dependencies> 
-			<dependency id="Conditions" version="2.1.0" />
 		</dependencies>
 	</metadata>
 	<files>
-		<file src="..\src\SaintModeCache.Net\bin\SignedRelease\SaintModeCache.Net.dll" target="lib\net40\" />
+		<file src="SaintModeCache.Net.dll" target="lib\net40\" />
 	</files>
 </package>

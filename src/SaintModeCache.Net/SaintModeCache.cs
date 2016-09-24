@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.Caching;
 using System.Threading;
 using Conditions;
@@ -108,7 +107,6 @@ namespace SaintModeCaching
             {
                 if (stale)
                 {
-                    Debug.WriteLine("Item is stale");
                     onAsyncUpdateCache.BeginInvoke(key, updateCache, cachePolicy, null, null);
                 }
 
@@ -299,7 +297,6 @@ namespace SaintModeCaching
 
         private object OnUpdateCache(string key, Func<string, object> func, CacheItemPolicy cachePolicy)
         {
-            Debug.WriteLine("EXEC update " + Thread.CurrentThread.ManagedThreadId);
             var item = func(key);
             SetOrUpdateWithoutCreate(key, item, cachePolicy);
             return item;

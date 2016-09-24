@@ -70,6 +70,12 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if "$(ConfigurationName)" == "SignedRelease" (
+"$(SolutionDir)packages\ILMerge.2.14.1208\Tools\ILMerge.exe" /t:library /targetplatform:v4,"$(MSBuildExtensionsPath)\..\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client" /keyfile:..\..\..\..\..\TheCodeKing.snk /out:"$(SolutionDir)..\nuget\SaintModeCache.Net.dll" SaintModeCache.Net.dll Conditions.dll
+)
+</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

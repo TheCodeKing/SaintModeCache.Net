@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: Guid("5c19c81c-ae23-4435-92a5-cc04333eec07")]
 
 #if SIGNED
+
 [assembly: AssemblyDelaySign(false)]
 [assembly: AssemblyKeyFile(@"..\..\..\..\..\thecodeking.snk")]
 #endif
