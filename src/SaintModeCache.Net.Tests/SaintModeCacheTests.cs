@@ -20,7 +20,7 @@ namespace SaintModeCaching.Tests
                 cache.SetOrUpdateWithoutCreate(cacheKey, expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
 
                 // act
-                var result = cache.GetOrCreate(cacheKey, key => unexpectedResult,
+                var result = cache.GetOrCreate(cacheKey,  (key, cancel) => unexpectedResult,
                     ObjectCache.InfiniteAbsoluteExpiration);
 
                 // assert
@@ -38,7 +38,7 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 var policy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddMilliseconds(10)};
-                cache.GetOrCreate(cacheKey, key => expectedResult, policy);
+                cache.GetOrCreate(cacheKey, (key, cancel) => expectedResult, policy);
                 Thread.Sleep(200);
                 var counter = 0;
                 var startTests = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -52,7 +52,7 @@ namespace SaintModeCaching.Tests
                     Func<object> testCache = () =>
                     {
                         startTests.WaitOne();
-                        return cache.GetOrCreate(cacheKey, key =>
+                        return cache.GetOrCreate(cacheKey, (key, cancel) =>
                         {
                             triggerUpdate = true;
                             Interlocked.Increment(ref counter);
@@ -101,7 +101,7 @@ namespace SaintModeCaching.Tests
             var cacheKey = "key";
             using (var cache = new SaintModeCache())
             {
-                cache.GetOrCreate(cacheKey, key => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
+                cache.GetOrCreate(cacheKey, (key, cancel) => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
 
                 // act
                 var result = cache.Stale(cacheKey);
@@ -121,7 +121,7 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache(memoryCache))
             {
                 // act
-                cache.GetOrCreate(cacheKey, key => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
 
                 // assert
                 Assert.That(memoryCache[cacheKey], Is.EqualTo(expectedResult));
@@ -137,7 +137,7 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 var policy = new CacheItemPolicy {AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration};
-                cache.GetOrCreate(cacheKey, key => expectedResult, policy);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, policy);
 
                 // act
                 var result = cache.GetWithoutCreateOrNull(cacheKey);
@@ -156,7 +156,7 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 var policy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddMilliseconds(10)};
-                cache.GetOrCreate(cacheKey, key => expectedResult, policy);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, policy);
                 Thread.Sleep(20);
 
                 // act
@@ -175,7 +175,7 @@ namespace SaintModeCaching.Tests
             var cacheKey = "key";
             using (var cache = new SaintModeCache())
             {
-                cache.GetOrCreate(cacheKey, key => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
 
                 // act
                 var result = cache.Stale(cacheKey);
@@ -203,7 +203,7 @@ namespace SaintModeCaching.Tests
                     Func<object> testCache = () =>
                     {
                         startTests.WaitOne();
-                        return cache.GetOrCreate(cacheKey, key =>
+                        return cache.GetOrCreate(cacheKey, (key, cancel) =>
                         {
                             Interlocked.Increment(ref counter);
                             return expectedResult;
@@ -259,7 +259,7 @@ namespace SaintModeCaching.Tests
             var cacheKey = "key";
             using (var cache = new SaintModeCache())
             {
-                cache.GetOrCreate(cacheKey, key => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
 
                 // act
                 var result = cache.GetWithoutCreateOrNull(cacheKey);
@@ -278,7 +278,7 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 var policy = new CacheItemPolicy {AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration};
-                cache.GetOrCreate(cacheKey, key => expectedResult, policy);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, policy);
 
                 // act
                 var result = cache.Expired(cacheKey);
@@ -299,12 +299,12 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 var policy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddMilliseconds(10)};
-                cache.GetOrCreate(cacheKey, key => expectedResult, policy);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, policy);
                 Thread.Sleep(20);
                 var startTests = new EventWaitHandle(false, EventResetMode.ManualReset);
 
                 // act
-                var cacheValue = cache.GetOrCreate(cacheKey, key =>
+                var cacheValue = cache.GetOrCreate(cacheKey, (key, cancel) =>
                 {
                     triggerUpdate = true;
                     startTests.Set();
@@ -319,6 +319,59 @@ namespace SaintModeCaching.Tests
         }
 
         [Test]
+        public void WhenCacheEmptyAndCancellationTokenUsedThenReturnNull()
+        {
+            // arrange
+            var unexpectedResult = "unexpectedResult";
+            var cacheKey = "key";
+            using (var cache = new SaintModeCache())
+            {
+                var startTests = new EventWaitHandle(false, EventResetMode.ManualReset);
+
+                // act
+                var cacheValue = cache.GetOrCreate(cacheKey, (key, cancel) =>
+                {
+                    cancel.IsCancellationRequested = true;
+                    startTests.Set();
+                    return unexpectedResult;
+                });
+
+                // assert
+                startTests.WaitOne();
+                Thread.Sleep(20);
+                Assert.That(cacheValue, Is.Null);
+            }
+        }
+
+        [Test]
+        public void WheStaleCacheItemExistsAndCancellationTokenUsedThenReturnStaleItem()
+        {
+            // arrange
+            var expectedResult = "expectedResult";
+            var unexpectedResult = "unexpectedResult";
+            var cacheKey = "key";
+            using (var cache = new SaintModeCache())
+            {
+                var startTests = new EventWaitHandle(false, EventResetMode.ManualReset);
+                cache.GetOrCreate(cacheKey, (key, cancel) => expectedResult, DateTime.UtcNow.AddMilliseconds(10));
+                Thread.Sleep(20);
+
+                // act
+                var cacheValue = cache.GetOrCreate(cacheKey, (key, cancel) =>
+                {
+                    cancel.IsCancellationRequested = true;
+                    startTests.Set();
+                    return unexpectedResult;
+                });
+
+                // assert
+                startTests.WaitOne();
+                Thread.Sleep(20);
+                Assert.That(cacheValue, Is.EqualTo(expectedResult));
+            }
+        }
+
+        [Test]
         public void WhenObjectExpiresThenAfterRefreshReturnUpdatedValue()
         {
             // arrange
@@ -328,18 +381,19 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 var policy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddMilliseconds(10)};
-                cache.GetOrCreate(cacheKey, key => unexpectedResult, policy);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => unexpectedResult, policy);
                 Thread.Sleep(20);
                 var startTests = new EventWaitHandle(false, EventResetMode.ManualReset);
-                cache.GetOrCreate(cacheKey, key =>
+                cache.GetOrCreate(cacheKey, (key, cancel) =>
                 {
                     startTests.Set();
                     return expectedResult;
                 }, ObjectCache.InfiniteAbsoluteExpiration);
+                startTests.WaitOne();
+                Thread.Sleep(20);
 
                 // act
-                startTests.WaitOne();
-                var cacheValue = cache.GetOrCreate(cacheKey, key => expectedResult, policy);
+                var cacheValue = cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, policy);
 
                 // assert
                 Assert.That(cacheValue, Is.EqualTo(expectedResult));
@@ -355,12 +409,12 @@ namespace SaintModeCaching.Tests
             var cacheKey = "key";
             using (var cache = new SaintModeCache())
             {
-                cache.GetOrCreate(cacheKey, key => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
 
                 // act
-                var cacheValue = cache.GetOrCreate(cacheKey, key => unexpectedResult,
+                var cacheValue = cache.GetOrCreate(cacheKey,  (key, cancel) => unexpectedResult,
                     ObjectCache.InfiniteAbsoluteExpiration);
-                cache.GetOrCreate(cacheKey, key => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, ObjectCache.InfiniteAbsoluteExpiration);
 
                 // assert
                 Assert.That(cacheValue, Is.EqualTo(expectedResult));
@@ -376,7 +430,7 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 // act
-                var cacheValue = cache.GetOrCreate(cacheKey, key => expectedResult,
+                var cacheValue = cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult,
                     ObjectCache.InfiniteAbsoluteExpiration);
 
                 // assert
@@ -395,12 +449,12 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 var policy = new CacheItemPolicy {AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration};
-                cache.GetOrCreate(cacheKey, key => unexpectedResult, policy);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => unexpectedResult, policy);
                 cache.Remove(cacheKey);
                 var ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
 
                 // act
-                cache.GetOrCreate(cacheKey, key =>
+                cache.GetOrCreate(cacheKey, (key, cancel) =>
                 {
                     triggerUpdate = true;
                     ewh.Set();
@@ -423,7 +477,7 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 var policy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddMilliseconds(10)};
-                cache.GetOrCreate(cacheKey, key => unexpectedResult, ObjectCache.InfiniteAbsoluteExpiration);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => unexpectedResult, ObjectCache.InfiniteAbsoluteExpiration);
                 cache.SetOrUpdateWithoutCreate(cacheKey, expectedResult, policy);
                 Thread.Sleep(20);
 
@@ -445,7 +499,7 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 var policy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddMilliseconds(10)};
-                cache.GetOrCreate(cacheKey, key => unexpectedResult, ObjectCache.InfiniteAbsoluteExpiration);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => unexpectedResult, ObjectCache.InfiniteAbsoluteExpiration);
                 cache.SetOrUpdateWithoutCreate(cacheKey, expectedResult, policy);
                 Thread.Sleep(20);
 
@@ -466,7 +520,7 @@ namespace SaintModeCaching.Tests
             using (var cache = new SaintModeCache())
             {
                 var policy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddMilliseconds(10)};
-                cache.GetOrCreate(cacheKey, key => expectedResult, policy);
+                cache.GetOrCreate(cacheKey,  (key, cancel) => expectedResult, policy);
                 Thread.Sleep(20);
 
                 // act
