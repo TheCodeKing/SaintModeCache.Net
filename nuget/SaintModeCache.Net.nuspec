@@ -2,14 +2,14 @@
 <package>
 	<metadata>
 		<id>SaintModeCache.Net</id>
-		<version>1.0.0</version>
+		<version>1.0.1</version>
 		<title>SaintModeCache.Net</title>
 		<authors>TheCodeKing</authors>
 		<owners>TheCodeKing</owners>
 		<licenseUrl>https://github.com/TheCodeKing/SaintModeCache.Net/blob/master/LICENSE</licenseUrl>
 		<projectUrl>https://github.com/TheCodeKing/SaintModeCache.Net</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>Threadsafe memory caching implementation which continues to serve stale data when it expires. It allows a single thread to update the cache in background when it becomes stale.</description>
+		<description>SaintModeCache is a threadSafe in-memory cache wrapper for performance optimisations. It's able to continue serving stale content after expiry, whilst it repopulates the cache with a non-blocking guaranteed single thread.</description>
 		<copyright>Copyright 2016</copyright>
 		<tags>mvc cache saintmode caching saintmodecache saintmodecache.net asp.cache memorycache</tags>
 		<references>
