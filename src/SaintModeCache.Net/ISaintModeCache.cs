@@ -14,6 +14,8 @@ namespace SaintModeCaching
 
         bool Expired(string key);
 
+        bool TryGet(string key, out object item);
+
         TCacheItem GetOrCreate<TCacheItem>(string key, Func<string, TCacheItem> updateCache)
             where TCacheItem : class;
 
@@ -27,8 +29,6 @@ namespace SaintModeCaching
             where TCacheItem : class;
 
         object GetWithoutCreateOrNull(string key);
-
-        DateTime? LastUpdatedDateTimeUtc(string key);
 
         object Remove(string key);
 
