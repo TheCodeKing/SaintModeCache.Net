@@ -3,6 +3,8 @@
 
 
 # Sitecore temp files
+nuget/*.dll
+nuget/*.nupkg
 temp/
 IconCache/
 logs/
