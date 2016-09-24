@@ -9,7 +9,7 @@
 		<licenseUrl>https://github.com/TheCodeKing/SaintModeCache.Net/blob/master/LICENSE</licenseUrl>
 		<projectUrl>https://github.com/TheCodeKing/SaintModeCache.Net</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>SaintModeCache is a threadSafe in-memory cache wrapper for performance optimisations. It's able to continue serving stale content after expiry, whilst it repopulates the cache with a non-blocking guaranteed single thread.</description>
+		<description>SaintModeCache is a thread safe in-memory cache wrapper for performance optimisation. It's able to continue serving stale content after expiry, whilst it repopulates the cache with a non-blocking guaranteed single thread.</description>
 		<copyright>Copyright 2016</copyright>
 		<tags>mvc cache saintmode caching saintmodecache saintmodecache.net asp.cache memorycache</tags>
 		<references>
