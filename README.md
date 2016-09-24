@@ -14,7 +14,7 @@ To cater for cache misses, like on application startup, the cache will block all
 Install-Package SaintModeCache.Net
 ```
 ### SaintMode Caching
-Use the GetOrCreate Method To leveage SaintMode caching mode. This requires a delegate which will be used to creaate the value in the case of a cache miss. If a cache item already exists then it's returned without attempting to create. If the cache item exists but has expired, then the stale item is returned the the caller whilse the delegate is used to refresh the cache on a backgorund thread.
+Use the GetOrCreate Method to leveage SaintMode caching mode. This requires a delegate which will be used to creaate the value in the case of a cache miss. If a cache item already exists then it's returned without attempting to create. If the cache item exists but has expired, then the stale item is returned the the caller whilse the delegate is used to refresh the cache on a backgorund thread.
 ```
 var cache = new SaintModeCache();
 var cacheKey = "customer123";

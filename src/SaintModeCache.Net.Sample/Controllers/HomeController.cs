@@ -26,7 +26,7 @@ namespace SaintModeCache.Net.Sample.Controllers
             Cache.GetOrCreate("1SecondServiceKey", k =>
             {
                 Thread.Sleep(1000);
-                return string.Concat("This text takes 1 seconds to load, and expires in 20 seconds. Updated ",
+                return string.Concat("This text takes 1 second to load, and expires in 20 seconds. Updated ",
                     DateTime.UtcNow.ToLongTimeString());
             },
                 DateTime.UtcNow.AddSeconds(20));
