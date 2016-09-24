@@ -26,7 +26,7 @@ var cachedValue = cache.GetOrCreate(cacheKey,  => {
     cacheTimeInSeconds); 
 ``` 
 ### UpdateCacheCancellationToken
-The update delegate is passed an instance of UpdateCacheCancellationToken. This can be used to cancel the update of the cache if needed, and force the system to contuniue serving stale cache items. In this case the expires is not reset, and the next attempt to read from cache will trigger another attempt to update. 
+The update delegate is passed an instance of UpdateCacheCancellationToken. This can be used to cancel the update of the cache if needed, and force the system to contuniue serving stale cache items. In this case the expires policy is not reset, and the next attempt to read from cache will trigger another attempt to update. 
 Warning if a cache item is removed or evicted from cache for any reason, and the update request is cancelled, then the cache will return a null value.
 ``` 
 var cache = new SaintModeCache(); 
@@ -36,7 +36,7 @@ var cacheTimeInSeconds = 60;
 // initalise a fallback cache item in case of cancel
 cache.SetOrUpdateWithoutCreate(cacheKey, DataModel.Default, cacheTimeInSeconds);
 
-// continues to return the cache item, even after expires
+// continues to return the previously set cache item, even after it expirie
 var cachedValue = cache.GetOrCreate(cacheKey, (key,cancelToken) => { 
         // on failure to get data from remote resources
         cancelToken.IsCancellationRequested = true;
