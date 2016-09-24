@@ -26,8 +26,8 @@ var cachedValue = cache.GetOrCreate(cacheKey,  => {
     cacheTimeInSeconds); 
 ``` 
 ### UpdateCacheCancellationToken
-The update delegate us passed a UpdateCacheCancellationToken. This can be used to cancel the update of the cache, and force the system to contuniue using any existing cache items. 
-Warning when using UpdateCacheCancellationToken, if any existing cache item is removed or evicted from cache for any reason then the cache will return a null value.
+The update delegate is passed an instance of UpdateCacheCancellationToken. This can be used to cancel the update of the cache if needed, and force the system to contuniue serving stale cache items. In this case the expires is not reset, and the next attempt to read from cache will trigger another attempt to update. 
+Warning if a cache item is removed or evicted from cache for any reason, and the update request is cancelled, then the cache will return a null value.
 ``` 
 var cache = new SaintModeCache(); 
 var cacheKey = "customer123"; 
