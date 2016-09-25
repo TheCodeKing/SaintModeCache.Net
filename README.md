@@ -6,7 +6,12 @@ It's ideal for websites which have slow integration points or expensive data pro
  
 Note the cache does not fetch new data until a cache key has been requested and after it has expired. At this point it will trigger a refresh of the cache item on a background thread, and continue serving stale content until the process completes. 
  
-To cater for cache misses, like on application startup, the cache will block all threads requesting a missing cache key, and allow only a single thread to populate the cache. Once the value is populated, all threads requesting the same cache key can access item. This prevents overloading external systems when the cache is cleared. 
+To cater for cache misses, like on application startup, the cache will block all threads requesting a missing cache key, and allow only a single thread to populate the cache. Once the value is populated, all threads requesting the same cache key can access item. This prevents overloading external systems when the cache is cleared.
+
+## Live Demo
+The following live demo uses the SaintModeCache server-side to minimise calls to various back-end web services it consumes. It also removes any wait time for the users whilst loading data to refresh the feeds. Every request is rendered server-side in real-time.
+
+http://saintmodedemo.azurewebsites.net/
  
 ## Quick Start 
 ### Install 
