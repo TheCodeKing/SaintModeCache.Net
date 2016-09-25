@@ -11,7 +11,7 @@ To cater for cache misses, like on application startup, the cache will block all
 ## Live Demo
 The following live demo uses the SaintModeCache server-side to minimise calls to various back-end web services it consumes. It also removes any wait time for the users whilst loading data to refresh the feeds. Every request is rendered server-side in real-time.
 
-http://saintmodedemo.azurewebsites.net/
+http://saintmodedemo.azurewebsites.net
  
 ## Quick Start 
 ### Install 
@@ -21,14 +21,11 @@ Install-Package SaintModeCache.Net
 ### SaintMode Caching 
 Use the GetOrCreate Method to leverage SaintMode caching mode. This requires a delegate which will be used to create the value in the case of a cache miss. If a cache item already exists then it's returned without attempting to create. If the cache item exists but has expired, then the stale item is returned the the caller whilst the delegate is used to refresh the cache on a background thread. 
 ``` 
-var cache = new SaintModeCache(); 
-var cacheKey = "customer123"; 
-var cacheTimeInSeconds = 60; 
-var cachedValue = cache.GetOrCreate(cacheKey,  => { 
-        // access remote resources and get cacheable data 
-        return new DataModel(); 
-    }, 
-    cacheTimeInSeconds); 
+var cacheKey = "customer123";
+var cacheTimeInSeconds = 60;
+var customerModel = Cache.GetOrCreate(cacheKey,
+        (key, cancelToken) => slowUnreliableService.GetCustomerModel(key),
+        cacheTimeInSeconds);
 ``` 
 ### UpdateCacheCancellationToken
 The update delegate is passed an instance of UpdateCacheCancellationToken. This can be used to cancel the update of the cache if needed, and force the system to contuniue serving stale cache items. In this case the expires policy is not reset, and the next attempt to read from cache will trigger another attempt for update. 
