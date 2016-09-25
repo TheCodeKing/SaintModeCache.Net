@@ -230,7 +230,7 @@ namespace SaintModeCaching
 
         private static object GetLock(string key)
         {
-            return string.Intern(string.Concat(LockNamePrefix, key).ToLowerInvariant());
+            return string.Intern(string.Concat(LockNamePrefix, key));
         }
 
         private static string GetShadowKey(string key)

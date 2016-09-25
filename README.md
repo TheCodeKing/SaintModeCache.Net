@@ -19,7 +19,7 @@ http://saintmodedemo.azurewebsites.net
 Install-Package SaintModeCache.Net 
 ``` 
 ### SaintMode Caching 
-Use the GetOrCreate Method to leverage SaintMode caching mode. This requires a delegate which will be used to create the value in the case of a cache miss. If a cache item already exists then it's returned without attempting to create. If the cache item exists but has expired, then the stale item is returned the the caller whilst the delegate is used to refresh the cache on a background thread. 
+Use the GetOrCreate Method to leverage SaintMode caching mode. This requires a delegate which will be used to create the value in the case of a cache miss. If a cache item already exists then it's returned without attempting to create. If the cache item exists but has expired, then the stale item is returned the the caller whilst the delegate is used to refresh the cache on a background thread. Note cache keys are case sensitive, thus "key" returns a different cache item to "KEY".
 ``` 
 var cacheKey = "customer123";
 var cacheTimeInSeconds = 60;
