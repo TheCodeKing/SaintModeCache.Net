@@ -9,6 +9,30 @@ namespace SaintModeCaching.Tests
     public class SaintModeCacheTests
     {
         [Test]
+        public void WhenActiveCacheAndRemoveThenKeyIsCaseSensitive()
+        {
+            // arrange
+            var expectedResult1 = "expectedResult1";
+            var expectedResult2 = "expectedResult2";
+            var cacheKey1 = "key";
+            var cacheKey2 = "KEY";
+            using (var cache = new SaintModeCache())
+            {
+                cache.SetOrUpdateWithoutCreate(cacheKey1, expectedResult1);
+                cache.SetOrUpdateWithoutCreate(cacheKey2, expectedResult2);
+                cache.Remove(cacheKey2);
+
+                // act
+                var result1 = cache.GetWithoutCreateOrNull(cacheKey1);
+                var result2 = cache.GetWithoutCreateOrNull(cacheKey2);
+
+                // assert
+                Assert.That(result1, Is.EqualTo(expectedResult1));
+                Assert.That(result2, Is.Null);
+            }
+        }
+
+        [Test]
         public void WhenActiveCacheItemRemovedThenGetOrCreateTriggersUpdate()
         {
             // arrange
@@ -71,7 +95,7 @@ namespace SaintModeCaching.Tests
                 cache.SetOrUpdateWithoutCreate(cacheKey1, expectedResult1, ObjectCache.InfiniteAbsoluteExpiration);
 
                 // act
-                var result = cache.GetOrCreate(cacheKey2, (k,c) => expectedResult2);
+                var result = cache.GetOrCreate(cacheKey2, (k, c) => expectedResult2);
 
                 // assert
                 Assert.That(result, Is.EqualTo(expectedResult2));
@@ -95,83 +119,6 @@ namespace SaintModeCaching.Tests
                 // assert
                 Assert.That(result, Is.Null);
             }
-        }
-
-        [Test]
-        public void WhenSetOrUpdateWithoutCreateThenGetWithoutCreateOrNullKeyIsCaseSensitive()
-        {
-            // arrange
-            var expectedResult1 = "expectedResult1";
-            var expectedResult2 = "expectedResult2";
-            var cacheKey1 = "key";
-            var cacheKey2 = "KEY";
-            using (var cache = new SaintModeCache())
-            {
-                cache.SetOrUpdateWithoutCreate(cacheKey1, expectedResult1);
-                cache.SetOrUpdateWithoutCreate(cacheKey2, expectedResult2);
-
-                // act
-                var result1 = cache.GetWithoutCreateOrNull(cacheKey1);
-                var result2 = cache.GetWithoutCreateOrNull(cacheKey2);
-
-                // assert
-                Assert.That(result1, Is.EqualTo(expectedResult1));
-                Assert.That(result2, Is.EqualTo(expectedResult2));
-            }
-        }
-
-        [Test]
-        public void WhenActiveCacheAndRemoveThenKeyIsCaseSensitive()
-        {
-            // arrange
-            var expectedResult1 = "expectedResult1";
-            var expectedResult2 = "expectedResult2";
-            var cacheKey1 = "key";
-            var cacheKey2 = "KEY";
-            using (var cache = new SaintModeCache())
-            {
-                cache.SetOrUpdateWithoutCreate(cacheKey1, expectedResult1);
-                cache.SetOrUpdateWithoutCreate(cacheKey2, expectedResult2);
-                cache.Remove(cacheKey2);
-
-                // act
-                var result1 = cache.GetWithoutCreateOrNull(cacheKey1);
-                var result2 = cache.GetWithoutCreateOrNull(cacheKey2);
-
-                // assert
-                Assert.That(result1, Is.EqualTo(expectedResult1));
-                Assert.That(result2, Is.Null);
-            }
-        }
-
-        [Test]
-        public void WhenStringInternWithDifferenceCaseStringsThenReferneceIsDifferent()
-        {
-            // arrange
-            var cacheKey1 = "key";
-            var cacheKey2 = "KEY";
-
-            // act
-            var ref1 = string.Intern(cacheKey1);
-            var ref2 = string.Intern(cacheKey2);
-
-            // assert
-            Assert.That(ref1, Is.Not.SameAs(ref2));
-        }
-
-        [Test]
-        public void WhenStringInternWithSameCaseStringsThenReferneceIsSame()
-        {
-            // arrange
-            var cacheKey1 = "key";
-            var cacheKey2 = "key";
-
-            // act
-            var ref1 = string.Intern(cacheKey1);
-            var ref2 = string.Intern(cacheKey2);
-
-            // assert
-            Assert.That(ref1, Is.SameAs(ref2));
         }
 
         [Test]
@@ -437,6 +384,29 @@ namespace SaintModeCaching.Tests
         }
 
         [Test]
+        public void WhenSetOrUpdateWithoutCreateThenGetWithoutCreateOrNullKeyIsCaseSensitive()
+        {
+            // arrange
+            var expectedResult1 = "expectedResult1";
+            var expectedResult2 = "expectedResult2";
+            var cacheKey1 = "key";
+            var cacheKey2 = "KEY";
+            using (var cache = new SaintModeCache())
+            {
+                cache.SetOrUpdateWithoutCreate(cacheKey1, expectedResult1);
+                cache.SetOrUpdateWithoutCreate(cacheKey2, expectedResult2);
+
+                // act
+                var result1 = cache.GetWithoutCreateOrNull(cacheKey1);
+                var result2 = cache.GetWithoutCreateOrNull(cacheKey2);
+
+                // assert
+                Assert.That(result1, Is.EqualTo(expectedResult1));
+                Assert.That(result2, Is.EqualTo(expectedResult2));
+            }
+        }
+
+        [Test]
         public void WhenStaleCacheAndMultipleThreadsGetValueThenOnlyOneThreadUpdatesValue()
         {
             // arrange
@@ -617,6 +587,36 @@ namespace SaintModeCaching.Tests
                 // assert
                 Assert.That(result, Is.True);
             }
+        }
+
+        [Test]
+        public void WhenStringInternWithDifferenceCaseStringsThenReferneceIsDifferent()
+        {
+            // arrange
+            var cacheKey1 = "key";
+            var cacheKey2 = "KEY";
+
+            // act
+            var ref1 = string.Intern(cacheKey1);
+            var ref2 = string.Intern(cacheKey2);
+
+            // assert
+            Assert.That(ref1, Is.Not.SameAs(ref2));
+        }
+
+        [Test]
+        public void WhenStringInternWithSameCaseStringsThenReferneceIsSame()
+        {
+            // arrange
+            var cacheKey1 = "key";
+            var cacheKey2 = "key";
+
+            // act
+            var ref1 = string.Intern(cacheKey1);
+            var ref2 = string.Intern(cacheKey2);
+
+            // assert
+            Assert.That(ref1, Is.SameAs(ref2));
         }
 
         [Test]
