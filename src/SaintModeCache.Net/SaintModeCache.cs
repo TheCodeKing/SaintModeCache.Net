@@ -238,19 +238,6 @@ namespace SaintModeCaching
             return string.Concat(ShadowKeyPrefixCacheName, key);
         }
 
-        private static bool IsLocked(object lockObj)
-        {
-            if (Monitor.TryEnter(lockObj))
-            {
-                Monitor.Exit(lockObj);
-            }
-            else
-            {
-                return true;
-            }
-            return false;
-        }
-
         public void Set(CacheItem item, DateTimeOffset absoluteExpiration)
         {
             item.Requires("item").IsNotNull();
@@ -299,19 +286,26 @@ namespace SaintModeCaching
         {
             var shadowKey = GetShadowKey(key);
             var shadowLock = GetLock(shadowKey);
-            if (!Expired(key) || IsLocked(shadowLock))
+            if (!Expired(key))
             {
                 return;
             }
 
-            lock (shadowLock)
+            if (Monitor.TryEnter(shadowLock))
             {
-                if (!Expired(key))
+                try
                 {
-                    return;
-                }
+                    if (!Expired(key))
+                    {
+                        return;
+                    }
 
-                OnUpdateCache(key, func, cachePolicy);
+                    OnUpdateCache(key, func, cachePolicy);
+                }
+                finally
+                {
+                    Monitor.Exit(shadowLock);
+                }
             }
         }
 
