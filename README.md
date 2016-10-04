@@ -23,7 +23,7 @@ Use the GetOrCreate Method to leverage SaintMode caching mode. This requires a d
 ``` 
 var cacheKey = "customer123";
 var cacheTimeInSeconds = 60;
-var customerModel = Cache.GetOrCreate(cacheKey,
+var customerModel = cache.GetOrCreate(cacheKey,
         (key, cancelToken) => slowUnreliableService.GetCustomerModel(key),
         cacheTimeInSeconds);
 ``` 
@@ -89,12 +89,12 @@ cache.GetOrCreate("MyKey", (key, cancelToken) =>
 ### Stale 
 A cache item is stale when it has expired, but has not yet fetched an updated value to replace it. Once stale, a background fetch is only triggered by a call to GetOrCreate. 
 ``` CSharpe 
-var isStale = Stale("MyKey", new object()); 
+var isStale = cache.Stale("MyKey", new object()); 
 ``` 
 ### Expired 
 A cache item has expired when it's cache policy has passed. However the item may still be in cache in a stale state. 
 ``` CSharpe 
-var hasExpired = Expired("MyKey"); 
+var hasExpired = cache.Expired("MyKey"); 
 ``` 
 ### TryGet 
 Try to get an existing item from the cache if it exists. Saint mode is not available via this interface, therefore it will return false if no item exists. 
@@ -112,38 +112,38 @@ if (cache.TryGet("MyKey", out result, out stale)) {
 ### SetOrUpdateWithoutCreate 
 Set or update an item in the cache directly. This will update an existing item and change it's expires policy to the default defined by the constructor. 
 ``` CSharpe 
-SetOrUpdateWithoutCreate("MyKey", new object()); 
+cache.SetOrUpdateWithoutCreate("MyKey", new object()); 
 ``` 
 Set or update an item in the cache directly and define a new expires policy. This will update an existing item and change it's expires policy to a timeout in seconds. 
 ``` CSharpe 
 var expiresPolicy = DateTime.UtcNow.AddSeconds(60); 
-SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy); 
+cache.SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy); 
 ``` 
 Set or update an item in the cache directly and define a new expires policy. This will update an existing item and change the cache policy to the one provided. 
 ``` CSharpe 
 var expiresPolicy = new CacheItemPolicy {  
     AbsoluteExpiration = DateTime.UtcNow.AddSeconds(20)}; 
-SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy); 
+cache.SetOrUpdateWithoutCreate("MyKey", new object(), expiresPolicy); 
 ``` 
 Set or update an item in the cache directly using a CacheItem instance. The default expires policy defined by the constructor is used. 
 ``` CSharpe 
 var cacheItem = new CacheItem("MyKey", new object());
-SetOrUpdateWithoutCreate(cacheItem); 
+cache.SetOrUpdateWithoutCreate(cacheItem); 
 ``` 
 Set or update an item in the cache directly using a CacheItem instance. This will update an existing item and change it's expires policy to a timeout in seconds.
 ``` CSharpe 
 var cacheItem = new CacheItem("MyKey", new object());
 var expiresPolicy = new CacheItemPolicy {  
     AbsoluteExpiration = DateTime.UtcNow.AddSeconds(20)}; 
-SetOrUpdateWithoutCreate(cacheItem, expiresPolicy); 
+cache.SetOrUpdateWithoutCreate(cacheItem, expiresPolicy); 
 ``` 
 ### GetWithoutCreateOrNull 
 Get an existing item from the cache if it exists or return null. SaintMode is not available via this interface, but it can be used to access existing values where they exist.
 ``` CSharpe 
-var cacheValue = GetWithoutCreateOrNull("MyKey"); 
+var cacheValue = cache.GetWithoutCreateOrNull("MyKey"); 
 ``` 
 ### Remove 
 Explicitly remove an item from the cache and return the last value. 
 ``` CSharpe 
-var removedValue = Remove("MyKey"); 
+var removedValue = cache.Remove("MyKey"); 
 ``` 
