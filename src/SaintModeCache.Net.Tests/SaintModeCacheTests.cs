@@ -288,6 +288,8 @@ namespace SaintModeCaching.Tests
 
                 startTests.Set();
                 waitForTests.WaitOne();
+
+                Assert.That(counter, Is.EqualTo(1));
             }
         }
 
@@ -620,7 +622,7 @@ namespace SaintModeCaching.Tests
         }
 
         [Test]
-        public void WheStaleCacheItemExistsAndCancellationTokenUsedThenReturnStaleItem()
+        public void WhenStaleCacheItemExistsAndCancellationTokenUsedThenReturnStaleItem()
         {
             // arrange
             var expectedResult = "expectedResult";

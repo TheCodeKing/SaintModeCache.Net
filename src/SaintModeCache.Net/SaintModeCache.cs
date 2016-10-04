@@ -112,8 +112,18 @@ namespace SaintModeCaching
                 return item as TCacheItem;
             }
 
-            item = OnUpdateCache(key, updateCache, cachePolicy);
-            return item as TCacheItem;
+            var shadowKey = GetShadowKey(key);
+            var shadowLock = GetLock(shadowKey);
+            lock (shadowLock)
+            {
+                if (TryGet(key, out item))
+                {
+                    return item as TCacheItem;
+                }
+
+               item = OnUpdateCache(key, updateCache, cachePolicy);
+                return item as TCacheItem;
+            }
         }
 
         public TCacheItem GetWithoutCreateOrNull<TCacheItem>(string key)
