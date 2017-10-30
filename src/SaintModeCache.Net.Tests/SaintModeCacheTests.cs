@@ -42,7 +42,7 @@ namespace SaintModeCaching.Tests
             var triggerUpdate = false;
             using (var cache = new SaintModeCache())
             {
-                var policy = new CacheItemPolicy {AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration};
+                var policy = new CacheItemPolicy { AbsoluteExpiration = ObjectCache.InfiniteAbsoluteExpiration};
                 cache.GetOrCreate(cacheKey, (key, cancel) => unexpectedResult, policy);
                 cache.Remove(cacheKey);
                 var ewh = new EventWaitHandle(false, EventResetMode.ManualReset);
@@ -220,6 +220,69 @@ namespace SaintModeCaching.Tests
                 startTests.WaitOne();
                 Thread.Sleep(20);
                 Assert.That(cacheValue, Is.Null);
+            }
+        }
+
+        [Test]
+        public void WhenCacheIsEmptyAndCacheItemPolicyOverrideOnUpdateThenCacheWithNewPolicy()
+        {
+            // arrange
+            var expectedResult = "expectedResult";
+            var cacheKey = "key";
+            var defaultTimeout = 360000;
+            var testOverrideTimeout = 1;
+            var defaultPolicy = new CacheItemPolicy
+            {
+                AbsoluteExpiration = DateTime.UtcNow.AddSeconds(defaultTimeout)
+            };
+
+            using (var cache = new SaintModeCache())
+            {
+                var startTests = new EventWaitHandle(false, EventResetMode.ManualReset);
+
+                // act
+                cache.GetOrCreate(cacheKey, (key, cancel) =>
+                {
+                    cancel.CacheItemPolicy = new CacheItemPolicy {AbsoluteExpiration = DateTime.UtcNow.AddSeconds(testOverrideTimeout) };
+                    startTests.Set();
+                    return expectedResult;
+                }, defaultPolicy);
+
+                // assert
+                startTests.WaitOne();
+                Thread.Sleep(testOverrideTimeout*1000);
+                Assert.That(cache.Expired(cacheKey), Is.True);
+            }
+        }
+
+        [Test]
+        public void WhenCacheIsEmptyAndCacheItemPolicyOverrideOnUpdateWithNullThenUseDefaultPolicy()
+        {
+            // arrange
+            var expectedResult = "expectedResult";
+            var cacheKey = "key";
+            var defaultTimeout = 1;
+            var defaultPolicy = new CacheItemPolicy
+            {
+                AbsoluteExpiration = DateTime.UtcNow.AddSeconds(defaultTimeout)
+            };
+
+            using (var cache = new SaintModeCache())
+            {
+                var startTests = new EventWaitHandle(false, EventResetMode.ManualReset);
+
+                // act
+                cache.GetOrCreate(cacheKey, (key, cancel) =>
+                {
+                    cancel.CacheItemPolicy = null;
+                    startTests.Set();
+                    return expectedResult;
+                }, defaultPolicy);
+
+                // assert
+                startTests.WaitOne();
+                Thread.Sleep(defaultTimeout * 1000);
+                Assert.That(cache.Expired(cacheKey), Is.True);
             }
         }
 

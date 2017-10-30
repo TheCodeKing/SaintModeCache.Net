@@ -322,14 +322,15 @@ namespace SaintModeCaching
         private object OnUpdateCache(string key, Func<string, CacheUpdateCancellationToken, object> func,
             CacheItemPolicy cachePolicy)
         {
-            var updateCancellationToken = new CacheUpdateCancellationToken();
+            var updateCancellationToken = new CacheUpdateCancellationToken(cachePolicy);
             var item = func(key, updateCancellationToken);
             if (updateCancellationToken.IsCancellationRequested)
             {
                 return null;
             }
 
-            SetOrUpdateWithoutCreate(key, item, cachePolicy);
+            var policy = updateCancellationToken.CacheItemPolicy ?? cachePolicy;
+            SetOrUpdateWithoutCreate(key, item, policy);
             return item;
         }
 
@@ -340,8 +341,13 @@ namespace SaintModeCaching
 
         public sealed class CacheUpdateCancellationToken
         {
-            internal CacheUpdateCancellationToken()
+            public CacheItemPolicy CacheItemPolicy { get; set; }
+
+            internal CacheUpdateCancellationToken(CacheItemPolicy cacheItemPolicy)
             {
+                cacheItemPolicy.Requires("cacheItemPolicy").IsNotNull();
+
+                this.CacheItemPolicy = cacheItemPolicy;
             }
 
             public bool IsCancellationRequested { get; set; } = false;
